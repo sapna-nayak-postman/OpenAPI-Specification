@@ -1,0 +1,26 @@
+id = 96cd992f-2fa4-4bf8-84f0-deaa9966fcc0
+
+[relations]
+
+[relations.collections]
+rootDirectory = postman/collections
+files[] = {"id":"23257689-3b7c7bd8-5cfd-4a44-9bed-1269c573a698","path":"Docs for Git linked API.json","metaData":{}}
+
+[relations.collections.metaData]
+
+[relations.apiDefinition]
+rootDirectory = examples/v3.0
+files[] = {"path":"api-with-examples.json","metaData":{}}
+files[] = {"path":"api-with-examples.yaml","metaData":{}}
+files[] = {"path":"callback-example.json","metaData":{}}
+files[] = {"path":"callback-example.yaml","metaData":{}}
+files[] = {"path":"link-example.json","metaData":{}}
+files[] = {"path":"link-example.yaml","metaData":{}}
+files[] = {"path":"petstore-expanded.json","metaData":{}}
+files[] = {"path":"petstore-expanded.yaml","metaData":{}}
+files[] = {"path":"petstore.json","metaData":{}}
+files[] = {"path":"petstore.yaml","metaData":{}}
+files[] = {"path":"uspto.json","metaData":{}}
+files[] = {"path":"uspto.yaml","metaData":{}}
+
+[relations.apiDefinition.metaData]
