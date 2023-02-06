@@ -331,6 +331,21 @@
 							"body": "{\n  \"message\": \"Lorem commodo ut do Ut\"\n}"
 						}
 					]
+				},
+				{
+					"name": "Request 3",
+					"id": "7d0fcac1-2e0f-418b-827f-10756adbc0cf",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": ""
+						}
+					},
+					"response": []
 				}
 			],
 			"id": "63e5a326-0395-4d7b-b25b-3ae1e4c83b1c"
