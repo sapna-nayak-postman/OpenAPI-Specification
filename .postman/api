@@ -5,6 +5,7 @@ id = ab0dca83-03ab-4555-920a-25ec89c8d2ff
 
 [relations.collections]
 rootDirectory = postman/collections
+files[] = {"id":"539229-0893bff4-5810-4d4c-9e69-035065f0ccb9","path":"AWS IAM MFA Audit.json","metaData":{}}
 files[] = {"id":"539229-6e7b5fed-d5ff-4281-9534-4641fc2abbff","path":"Docs for Kasey's API.json","metaData":{}}
 
 [relations.collections.metaData]

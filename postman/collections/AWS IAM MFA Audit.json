@@ -1,0 +1,415 @@
+{
+	"info": {
+		"_postman_id": "0893bff4-5810-4d4c-9e69-035065f0ccb9",
+		"name": "AWS IAM MFA Audit",
+		"description": "A simple collection to enforce the presence of MFA for human users in an AWS organization.\n\nThis is done as follows:\n1. List all human users (users with console sign in access)\n2. Stringify and save the acquired list of human users to an environment variable.\n3. Using `postman.setNextRequest`, iterate over the list of users, maintaining an `index` environment variable to represent the current user being audited.\n4. Fetch the MFA device details to determine the current MFA state for the current user. If MFA is disabled, fail a test and add the user's name to a separate list for users that do not have MFA enabled.\n5. Compile the non-MFA list users to be sent to Slack as a daily report.\n\nThe following environment variables are required by this collection:\n| SNo | Variable          | Description                                                                  | Required |\n|-----|-------------------|------------------------------------------------------------------------------|----------|\n| 1   | id                | The AWS Access Key ID                                                        | Yes      |\n| 2   | key               | The AWS Access Key Secret                                                    | Yes      |\n| 3   | slack_channel     | The # prefixed channel name to send Slack reports to                         | Yes      |\n| 4   | slack_webhook_url | The Slack webhook URL for sending Slack reports                              | No       |\n| 5   | slack_username    | The username with which to send notifications. Defaults to aws-iam-audit-bot | No       |\n| 6   | slack_icon        | The icon used for the Slack message. Defaults to :closed_lock_with_key:      | No       |\n\nNote: While creating the AWS access key and ID, ensure the following:\n1. The access key id and secret are not associated with an account that has console login access.\n2. The access key id and secret must be associated with a non-console login user that has the following permissions:\n```\n{\n    \"Version\": \"2012-10-17\",\n    \"Statement\": [\n        {\n          \"Sid\": \"GrantIAMUserMFAAccess\",\n            \"Effect\": \"Allow\",\n            \"Action\": [\n                \"iam:ListUsers\",\n                \"iam:ListMFADevices\"\n            ],\n            \"Resource\": \"*\"\n        }\n    ]\n}\n```\n\nMore reading:\n1. To enforce MFA for your AWS accounts, see http://docs.aws.amazon.com/IAM/latest/UserGuide/tutorial_users-self-manage-mfa-and-creds.html",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_uid": "539229-0893bff4-5810-4d4c-9e69-035065f0ccb9"
+	},
+	"item": [
+		{
+			"name": "List Users",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.environment.get('users') && pm.environment.unset('users');",
+							"pm.environment.get('badUsers') && pm.environment.unset('badUsers');",
+							""
+						],
+						"id": "4f2be13c-0e70-4aa2-befd-fb20746af31a"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"var users,",
+							"    result = _.get(xml2Json(responseBody), 'ListUsersResponse.ListUsersResult'),",
+							"    newUsers = _.filter(_.get(result, 'Users.member', []), 'PasswordLastUsed');",
+							"",
+							"try {",
+							"    users = JSON.parse(pm.environment.get('users') || '[]');",
+							"    tests['User list should be valid'] = _.isArray(users);",
+							"}",
+							"catch (e) {",
+							"    users = [];",
+							"    tests[`Should have a valid list of user records ${e.message}`] = false;",
+							"    console.error(e);",
+							"}",
+							"",
+							"// prevent user records from previous/manual runs from interfering with the current run",
+							"!pm.environment.get('marker') && pm.environment.unset('users');",
+							"",
+							"tests['Should be OK'] = responseCode.code === 200;",
+							"tests['Should have a valid response'] = !_.isEmpty(result);",
+							"",
+							"pm.environment.set('users', JSON.stringify(_.isArray(users) ? users.concat(newUsers) : newUsers));",
+							""
+						],
+						"id": "f3e2128d-17da-46ac-9340-54fa233600cc"
+					}
+				}
+			],
+			"id": "0b623b6d-afba-450b-a397-1be40eef0350",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "awsv4",
+					"awsv4": [
+						{
+							"key": "accessKey",
+							"value": "{{id}}",
+							"type": "string"
+						},
+						{
+							"key": "secretKey",
+							"value": "{{key}}",
+							"type": "string"
+						},
+						{
+							"key": "region",
+							"value": "us-east-1",
+							"type": "string"
+						},
+						{
+							"key": "service",
+							"value": "iam",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/x-www-form-urlencoded"
+					},
+					{
+						"key": "X-Amz-Date",
+						"value": "20170901T145542Z"
+					},
+					{
+						"key": "Authorization",
+						"value": "AWS4-HMAC-SHA256 Credential=AKIAJSC5VPELVYZXCMLA/20170901/us-east-1/iam/aws4_request, SignedHeaders=content-type;host;x-amz-date, Signature=53ddcb5962268601b20c61fccb476dda9cfa418d6111a0d34e459e1a14d346ae"
+					}
+				],
+				"url": {
+					"raw": "https://iam.amazonaws.com?Action=ListUsers&Version=2010-05-08&MaxItems=1000",
+					"protocol": "https",
+					"host": [
+						"iam",
+						"amazonaws",
+						"com"
+					],
+					"query": [
+						{
+							"key": "Action",
+							"value": "ListUsers"
+						},
+						{
+							"key": "Version",
+							"value": "2010-05-08"
+						},
+						{
+							"key": "MaxItems",
+							"value": "1000"
+						}
+					]
+				},
+				"description": "A simple `GET` request to fetch all users under the AWS organization for Postman. This is step one in the described process. Since AWS users can be configured to not have console sign in access, the fetched list is reducued to users with valid console passwords only. (Bot users should not have console sign in access, so the presence of the last password used timestamp will indicate the current user is a human user)."
+			},
+			"response": []
+		},
+		{
+			"name": "List MFA devices",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"var user,",
+							"    users,",
+							"    index = (Number(pm.environment.get(\"index\")) + 1) || 0;",
+							"",
+							"pm.environment.set(\"index\", index);",
+							"",
+							"try {",
+							"    users = JSON.parse(pm.environment.get(\"users\") || '[]');",
+							"    tests['User list must be valid'] = !_.isEmpty(users);",
+							"    pm.environment.set('user', _.get(users, [index, 'UserName']));",
+							"} catch (e) {",
+							"    console.error(e);",
+							"}",
+							""
+						],
+						"id": "928f0b71-ddb5-4f63-ad7b-983d637524f2"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"var url = require('url'),",
+							"",
+							"    users,",
+							"    hasMFA,",
+							"    badUsers,",
+							"    user = pm.environment.get('user'),",
+							"    index = Number(pm.environment.get('index')) || 0,",
+							"    slackUrl = pm.environment.get('slack_webhook_url'),",
+							"    urlObj = slackUrl && url.parse(slackUrl),",
+							"    result = _.get(xml2Json(pm.response.text()), 'ListMFADevicesResponse.ListMFADevicesResult.MFADevices.member', []);",
+							"",
+							"tests['Should be OK'] = pm.response.code === 200;",
+							"",
+							"try {",
+							"    users = JSON.parse(pm.environment.get('users') || '[]');",
+							"    tests['Should have a non-empty array of user records'] = _.isArray(users) && !_.isEmpty(users);",
+							"}",
+							"catch (e) {",
+							"    users = [];",
+							"    tests['Existing user records are valid'] = false;",
+							"    console.error(e.message);",
+							"}",
+							"",
+							"try {",
+							"    badUsers = JSON.parse(pm.environment.get('badUsers') || '[]');",
+							"    tests['Bad user records are valid'] = _.isArray(badUsers);",
+							"}",
+							"catch (e) {",
+							"    badUsers = [];",
+							"    tests['Bad user records are valid'] = false;",
+							"    console.error(e.message);",
+							"}",
+							"",
+							"tests[`${user} should have MFA enabled`] = (hasMFA = !_.isEmpty(result));",
+							"",
+							"// Update the list of bad users if needed",
+							"if (!hasMFA) {",
+							"    badUsers.push(user);",
+							"    pm.environment.set('badUsers', JSON.stringify(badUsers));",
+							"}",
+							"",
+							"// Loop back over the current request if there are more user records to be audited",
+							"if (index < (_.size(users) - 1)) {",
+							"    return postman.setNextRequest(request.name);",
+							"}",
+							"if (urlObj && urlObj.path && (urlObj.host === 'hooks.slack.com')) {",
+							"    return;",
+							"}",
+							"postman.setNextRequest(null);"
+						],
+						"id": "56ea8ca7-ee46-4148-80f2-555788dda9f3"
+					}
+				}
+			],
+			"id": "fa8bc57b-50de-4c3f-8c48-da1d9d2f5614",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "awsv4",
+					"awsv4": [
+						{
+							"key": "accessKey",
+							"value": "{{id}}",
+							"type": "string"
+						},
+						{
+							"key": "secretKey",
+							"value": "{{key}}",
+							"type": "string"
+						},
+						{
+							"key": "region",
+							"value": "us-east-1",
+							"type": "string"
+						},
+						{
+							"key": "service",
+							"value": "iam",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/x-www-form-urlencoded"
+					},
+					{
+						"key": "X-Amz-Date",
+						"value": "20170901T152033Z"
+					},
+					{
+						"key": "Authorization",
+						"value": "AWS4-HMAC-SHA256 Credential=AKIAJSC5VPELVYZXCMLA/20170901/us-east-1/iam/aws4_request, SignedHeaders=content-type;host;x-amz-date, Signature=cd757bfe3bd0ca3f4b30f762e2124a32a1a9ff6c36523c88e974b2fe72c8b33d"
+					}
+				],
+				"url": {
+					"raw": "https://iam.amazonaws.com?Action=ListMFADevices&Version=2010-05-08&MaxItems=1000&UserName={{user}}",
+					"protocol": "https",
+					"host": [
+						"iam",
+						"amazonaws",
+						"com"
+					],
+					"query": [
+						{
+							"key": "Action",
+							"value": "ListMFADevices"
+						},
+						{
+							"key": "Version",
+							"value": "2010-05-08"
+						},
+						{
+							"key": "MaxItems",
+							"value": "1000"
+						},
+						{
+							"key": "UserName",
+							"value": "{{user}}"
+						}
+					]
+				},
+				"description": "A simple `GET` request to fetch all MFA devices in use under the Postman org (steps three, four in the process). This is done one user at a time, so `postman.setNextRequest` is used to handle looping over this list of users (obtained in the previous step)."
+			},
+			"response": []
+		},
+		{
+			"name": "Send IAM MFA Audit report to Slack",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"var err,",
+							"    users,",
+							"    badUsers,",
+							"    red = '#ff0000',",
+							"    blankArrayStr = '[]',",
+							"    slackBody = {",
+							"      channel: pm.environment.get('slack_channel') || '#<default-slack-channel-name-goes-here>',",
+							"      username: pm.environment.get('slack_username') || 'aws-iam-audit-bot',",
+							"      icon_emoji: pm.environment.get('slack_icon') || ':closed_lock_with_key:'",
+							"    };",
+							"",
+							"try {",
+							"    users = JSON.parse(pm.environment.get('users') || blankArrayStr);",
+							"}",
+							"catch (e) {",
+							"    users = [];",
+							"    console.error(e.message);",
+							"}",
+							"",
+							"try {",
+							"    badUsers = JSON.parse(pm.environment.get('badUsers') || blankArrayStr);",
+							"}",
+							"catch (e) {",
+							"    err = e;",
+							"    badUsers = [];",
+							"    console.error(e.message);",
+							"}",
+							"",
+							"if (err) {",
+							"    slackBody.attachments = [];",
+							"    slackBody.text = `There was an error auditing AWS accounts. ${err.message || err}`;",
+							"}",
+							"else {",
+							"    slackBody.text = badUsers.length ? `${badUsers.length} ${users.length ? 'out of ' + users.length + ' ' : ''}AWS users do not have MFA enabled.`",
+							"        : 'All AWS users have MFA enabled! :tada:';",
+							"    slackBody.attachments = _.map(badUsers, function (user, index) {",
+							"        var value = `${index + 1}. @${user}`;",
+							"",
+							"        return {",
+							"            text: value,",
+							"            fallback: value,",
+							"            color: red",
+							"        };",
+							"    });",
+							"}",
+							"",
+							"pm.environment.set('slack_body', JSON.stringify(slackBody));"
+						],
+						"id": "4914f3b1-e03b-4688-9b79-fc1a92dbf59b"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"tests['Should have sent the report successfully'] = pm.response.code === 200;",
+							"tests['Should have responded correctly'] = pm.response.text() === 'ok';",
+							"",
+							"pm.environment.unset('user');",
+							"pm.environment.unset('users');",
+							"pm.environment.unset('index');",
+							""
+						],
+						"id": "3669b44f-d1b4-495b-97d2-b46adfbd744c"
+					}
+				}
+			],
+			"id": "98792399-9a1d-46bb-8199-30a46bfe715e",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{{slack_body}}"
+				},
+				"url": {
+					"raw": "{{slack_webhook_url}}",
+					"host": [
+						"{{slack_webhook_url}}"
+					]
+				},
+				"description": "A simple `POST` requst to send reports to Slack. This report is merely a list of all users that do not have MFA enabled."
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "07bf8cab-9f80-4a21-9601-76eb26ff204e",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "0b5895b6-9ade-4c08-84d8-40ce4d5a6c5b",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}
