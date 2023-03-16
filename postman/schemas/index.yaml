@@ -5,10 +5,10 @@ info:
   description: Buy or rent spacecrafts
 
 paths:
-  /spacecrafts/{spacecraftId}:
+  /spacecrafts/{parameter2}:
     parameters:
-      - name: spacecraftId
-        description: The unique identifier of the spacecraft
+      - name: parameter2
+        description: Description edited in Postman
         in: path
         required: true
         schema:

@@ -13,18 +13,19 @@
 				{
 					"listen": "prerequest",
 					"script": {
+						"id": "4f2be13c-0e70-4aa2-befd-fb20746af31a",
 						"type": "text/javascript",
 						"exec": [
 							"pm.environment.get('users') && pm.environment.unset('users');",
 							"pm.environment.get('badUsers') && pm.environment.unset('badUsers');",
 							""
-						],
-						"id": "4f2be13c-0e70-4aa2-befd-fb20746af31a"
+						]
 					}
 				},
 				{
 					"listen": "test",
 					"script": {
+						"id": "f3e2128d-17da-46ac-9340-54fa233600cc",
 						"type": "text/javascript",
 						"exec": [
 							"var users,",
@@ -49,8 +50,7 @@
 							"",
 							"pm.environment.set('users', JSON.stringify(_.isArray(users) ? users.concat(newUsers) : newUsers));",
 							""
-						],
-						"id": "f3e2128d-17da-46ac-9340-54fa233600cc"
+						]
 					}
 				}
 			],
@@ -132,6 +132,7 @@
 				{
 					"listen": "prerequest",
 					"script": {
+						"id": "928f0b71-ddb5-4f63-ad7b-983d637524f2",
 						"type": "text/javascript",
 						"exec": [
 							"var user,",
@@ -148,13 +149,13 @@
 							"    console.error(e);",
 							"}",
 							""
-						],
-						"id": "928f0b71-ddb5-4f63-ad7b-983d637524f2"
+						]
 					}
 				},
 				{
 					"listen": "test",
 					"script": {
+						"id": "56ea8ca7-ee46-4148-80f2-555788dda9f3",
 						"type": "text/javascript",
 						"exec": [
 							"var url = require('url'),",
@@ -206,8 +207,7 @@
 							"    return;",
 							"}",
 							"postman.setNextRequest(null);"
-						],
-						"id": "56ea8ca7-ee46-4148-80f2-555788dda9f3"
+						]
 					}
 				}
 			],
@@ -293,6 +293,7 @@
 				{
 					"listen": "prerequest",
 					"script": {
+						"id": "4914f3b1-e03b-4688-9b79-fc1a92dbf59b",
 						"type": "text/javascript",
 						"exec": [
 							"var err,",
@@ -342,13 +343,13 @@
 							"}",
 							"",
 							"pm.environment.set('slack_body', JSON.stringify(slackBody));"
-						],
-						"id": "4914f3b1-e03b-4688-9b79-fc1a92dbf59b"
+						]
 					}
 				},
 				{
 					"listen": "test",
 					"script": {
+						"id": "3669b44f-d1b4-495b-97d2-b46adfbd744c",
 						"type": "text/javascript",
 						"exec": [
 							"tests['Should have sent the report successfully'] = pm.response.code === 200;",
@@ -358,8 +359,7 @@
 							"pm.environment.unset('users');",
 							"pm.environment.unset('index');",
 							""
-						],
-						"id": "3669b44f-d1b4-495b-97d2-b46adfbd744c"
+						]
 					}
 				}
 			],
@@ -388,6 +388,276 @@
 				"description": "A simple `POST` requst to send reports to Slack. This report is merely a list of all users that do not have MFA enabled."
 			},
 			"response": []
+		},
+		{
+			"name": "Read a spacecraft",
+			"id": "785bb52e-c8fe-481e-99f2-640888cf5567",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/spacecrafts/:spacecraftId",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"spacecrafts",
+						":spacecraftId"
+					],
+					"variable": [
+						{
+							"key": "spacecraftId"
+						},
+						{
+							"key": "parameter 1",
+							"value": "eu magna nisi",
+							"description": "(Required) Modified description"
+						}
+					]
+				}
+			},
+			"response": [
+				{
+					"id": "b05b4d09-1880-436c-9a38-0aa28c9558fb",
+					"name": "The spacecraft corresponding to the provided `spacecraftId`",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/spacecrafts/:spacecraftId",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"spacecrafts",
+								":spacecraftId"
+							],
+							"variable": [
+								{
+									"key": "spacecraftId"
+								}
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "Text",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"id\": \"culpa consectetur pro\",\n  \"name\": \"labore dolore ut ullamco\",\n  \"type\": \"satellite\",\n  \"description\": \"ut veniam ullamco\"\n}"
+				},
+				{
+					"id": "2301fb16-d5da-4071-8a19-f03f64157438",
+					"name": "No spacecraft found for the provided `spacecraftId`",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/spacecrafts/:spacecraftId",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"spacecrafts",
+								":spacecraftId"
+							],
+							"variable": [
+								{
+									"key": "spacecraftId"
+								}
+							]
+						}
+					},
+					"status": "Not Found",
+					"code": 404,
+					"_postman_previewlanguage": "Text",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"message\": \"tempor laborum sint\"\n}"
+				},
+				{
+					"id": "ece8f0c3-20b4-4487-b141-bc09fed80cb2",
+					"name": "Unexpected error",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/spacecrafts/:spacecraftId",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"spacecrafts",
+								":spacecraftId"
+							],
+							"variable": [
+								{
+									"key": "spacecraftId"
+								}
+							]
+						}
+					},
+					"status": "Internal Server Error",
+					"code": 500,
+					"_postman_previewlanguage": "Text",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"message\": \"tempor laborum sint\"\n}"
+				}
+			]
+		},
+		{
+			"name": "Read a spacecraft",
+			"id": "e45cc25f-64f6-4452-9912-49a6d39edd55",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/spacecrafts/:spacecraftId",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"spacecrafts",
+						":spacecraftId"
+					],
+					"variable": [
+						{
+							"key": "spacecraftId"
+						},
+						{
+							"key": "parameter 1",
+							"value": "eu magna nisi",
+							"description": "(Required) Modified description"
+						}
+					]
+				}
+			},
+			"response": [
+				{
+					"id": "882e87f7-6699-410f-82d3-c71f278cd1bc",
+					"name": "The spacecraft corresponding to the provided `spacecraftId`",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/spacecrafts/:spacecraftId",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"spacecrafts",
+								":spacecraftId"
+							],
+							"variable": [
+								{
+									"key": "spacecraftId"
+								}
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "Text",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"id\": \"culpa consectetur pro\",\n  \"name\": \"labore dolore ut ullamco\",\n  \"type\": \"satellite\",\n  \"description\": \"ut veniam ullamco\"\n}"
+				},
+				{
+					"id": "d59346cf-83d7-421c-b83e-d987228cf487",
+					"name": "No spacecraft found for the provided `spacecraftId`",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/spacecrafts/:spacecraftId",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"spacecrafts",
+								":spacecraftId"
+							],
+							"variable": [
+								{
+									"key": "spacecraftId"
+								}
+							]
+						}
+					},
+					"status": "Not Found",
+					"code": 404,
+					"_postman_previewlanguage": "Text",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"message\": \"tempor laborum sint\"\n}"
+				},
+				{
+					"id": "01a913e8-1aed-44f2-acc3-a58272bfd69d",
+					"name": "Unexpected error",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/spacecrafts/:spacecraftId",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"spacecrafts",
+								":spacecraftId"
+							],
+							"variable": [
+								{
+									"key": "spacecraftId"
+								}
+							]
+						}
+					},
+					"status": "Internal Server Error",
+					"code": 500,
+					"_postman_previewlanguage": "Text",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"message\": \"tempor laborum sint\"\n}"
+				}
+			]
 		}
 	],
 	"event": [
@@ -410,6 +680,14 @@
 					""
 				]
 			}
+		}
+	],
+	"variable": [
+		{
+			"id": "4dc1c74c-ee1c-433c-a1d3-24b633510d55",
+			"key": "baseUrl",
+			"value": "/",
+			"type": "string"
 		}
 	]
 }
