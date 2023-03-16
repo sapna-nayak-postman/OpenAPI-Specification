@@ -8,7 +8,7 @@ paths:
   /spacecrafts/{parameter2}:
     parameters:
       - name: parameter2
-        description: Description edited in Postman
+        description: Description edited in Github 1234
         in: path
         required: true
         schema:
